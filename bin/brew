@@ -1,4 +1,4 @@
-#!/System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/bin/ruby -W0
+#!/usr/bin/env ruby
 # -*- coding: utf-8 -*-
 
 std_trap = trap("INT") { exit! 130 } # no backtrace thanks
@@ -83,14 +83,7 @@ begin
 
   # Add example external commands to PATH before checking.
   ENV['PATH'] += ":#{HOMEBREW_REPOSITORY}/Library/Contributions/cmds"
-  if which "brew-#{cmd}"
-    %w[CACHE CELLAR LIBRARY_PATH PREFIX REPOSITORY].each do |e|
-      ENV["HOMEBREW_#{e}"] = Object.const_get "HOMEBREW_#{e}"
-    end
-    exec "brew-#{cmd}", *ARGV
-  elsif require? `/usr/bin/which brew-#{cmd}.rb`
-    exit 0
-  elsif require? HOMEBREW_REPOSITORY/"Library/Homebrew/cmd"/cmd
+  if require? HOMEBREW_REPOSITORY/"Library/Homebrew/cmd"/cmd
     Homebrew.send cmd.to_s.gsub('-', '_').downcase
   else
     onoe "Unknown command: #{cmd}"
