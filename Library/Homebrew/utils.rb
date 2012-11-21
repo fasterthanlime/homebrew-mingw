@@ -14,7 +14,7 @@ class Tty
     def gray; bold 30 end
 
     def width
-      `/usr/bin/tput cols`.strip.to_i
+      `stty size`.split(' ')[1].to_i
     end
 
   private
@@ -28,7 +28,9 @@ class Tty
       escape "4;#{n}"
     end
     def escape n
-      "\033[#{n}m" if $stdout.tty?
+      # FIXME: find a way to make escape works on Windows (tried ANSICON, doesn't work)
+      ""
+      #"\033[#{n}m" if $stdout.tty?
     end
   end
 end
