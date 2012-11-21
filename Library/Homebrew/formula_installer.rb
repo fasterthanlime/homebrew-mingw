@@ -225,29 +225,28 @@ class FormulaInstaller
     args << '--build-from-source'
     args.uniq! # Just in case some dupes were added
 
-    fork do
-      begin
-        read.close
-        exec '/usr/bin/nice',
-             '/System/Library/Frameworks/Ruby.framework/Versions/1.8/usr/bin/ruby',
-             '-W0',
-             '-I', Pathname.new(__FILE__).dirname,
-             '-rbuild',
-             '--',
-             f.path,
-             *args.options_only
-      rescue Exception => e
-        Marshal.dump(e, write)
-        write.close
-        exit! 1
-      end
+    begin
+      Process.spawn 'C:\MinGW\msys\1.0\bin\sh.exe',
+                    '-c',
+                    'nice',
+                    'ruby',
+                    '-W0',
+                    '-I', Pathname.new(__FILE__).dirname,
+                    '-rbuild',
+                    '--',
+                    f.path,
+                    *args.options_only,
+                    :in => read,
+                    :out => write
+    rescue Exception => e
+      puts e
+      write.close
+      exit! 1
     end
 
     ignore_interrupts(:quietly) do # the fork will receive the interrupt and marshall it back
       write.close
       Process.wait
-      data = read.read
-      raise Marshal.load(data) unless data.nil? or data.empty?
       raise Interrupt if $?.exitstatus == 130
       raise "Suspicious installation failure" unless $?.success?
     end
