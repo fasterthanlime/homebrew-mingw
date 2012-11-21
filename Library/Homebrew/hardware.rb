@@ -32,7 +32,7 @@ class Hardware
 
   def self.is_64_bit?
     return @@is_64_bit if defined? @@is_64_bit
-    @@is_64_bit = `wmic cpu get AddressWidth | tail -2 | head - 1`.to_i == 64
+    @@is_64_bit = `wmic cpu get AddressWidth | tail -2 | head -1`.to_i == 64
   end
   
   def self.bits
