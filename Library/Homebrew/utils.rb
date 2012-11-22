@@ -14,6 +14,7 @@ class Tty
     def gray; bold 30 end
 
     def width
+      puts ENV['PATH']
       `stty size`.split(' ')[1].to_i
     end
 

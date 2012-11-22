@@ -2,9 +2,11 @@
 
 # This script is called by formula_installer as a separate instance.
 # Rationale: Formula can use __END__, Formula can change ENV
-# Thrown exceptions are propogated back to the parent process over a pipe
+# Thrown exceptions are propagated back to the parent process over a pipe
 
 STD_TRAP = trap("INT") { exit! 130 } # no backtrace thanks
+
+puts ENV['PATH']
 
 at_exit do
   # the whole of everything must be run in at_exit because the formula has to
@@ -58,7 +60,7 @@ def post_superenv_hacks f
   # Only allow Homebrew-approved directories into the PATH, unless
   # a formula opts-in to allowing the user's path.
   if f.env.userpaths?
-    paths = ORIGINAL_PATHS.map{|pn| pn.realpath.to_s rescue nil } - %w{/usr/X11/bin /opt/X11/bin}
+    paths = ORIGINAL_PATHS.map{|pn| pn.realpath.to_s rescue nil }
     ENV['PATH'] = "#{ENV['PATH']}:#{paths.join(':')}"
   end
 end

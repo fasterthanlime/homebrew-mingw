@@ -100,7 +100,7 @@ class << ENV
   def determine_path
     paths = [superbin]
     paths += all_deps.map{|dep| "#{HOMEBREW_PREFIX}/opt/#{dep}/bin" }
-    paths += %w{/usr/bin /bin /usr/sbin /sbin}
+    paths += %w{C:/MinGW/msys/1.0/bin}
     paths.to_path_s
   end
 
@@ -246,7 +246,10 @@ end
 
 class Array
   def to_path_s
-    map(&:to_s).uniq.select{|s| File.directory? s }.join(':').chuzzle
+    puts "Original paths = #{self}"
+    result = map(&:to_s).uniq.select{|s| File.directory? s }.join(';').chuzzle
+    puts "result = #{result}"
+    result
   end
 end
 

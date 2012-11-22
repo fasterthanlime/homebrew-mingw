@@ -214,9 +214,9 @@ class FormulaInstaller
     #    the easiest way to do this
     # 2. formulae have access to __END__ the only way to allow this is
     #    to make the formula script the executed script
-    read, write = IO.pipe
+    #read, write = IO.pipe
     # I'm guessing this is not a good way to do this, but I'm no UNIX guru
-    ENV['HOMEBREW_ERROR_PIPE'] = write.to_i.to_s
+    #ENV['HOMEBREW_ERROR_PIPE'] = write.to_i.to_s
 
     args = ARGV.clone
     args.concat tab.used_options unless tab.nil? or args.include? '--fresh'
@@ -225,31 +225,25 @@ class FormulaInstaller
     args << '--build-from-source'
     args.uniq! # Just in case some dupes were added
 
-    begin
-      Process.spawn 'C:\MinGW\msys\1.0\bin\sh.exe',
-                    '-c',
-                    'nice',
-                    'ruby',
-                    '-W0',
-                    '-I', Pathname.new(__FILE__).dirname,
-                    '-rbuild',
-                    '--',
-                    f.path,
-                    *args.options_only,
-                    :in => read,
-                    :out => write
-    rescue Exception => e
-      puts e
-      write.close
-      exit! 1
-    end
+    args = [
+      'ruby',
+      '-I', 
+      Pathname.new(__FILE__).dirname,
+      '-rbuild',
+      '--',
+      f.path,
+      *args.options_only
+    ]
+    command = "sh -c '#{args.join(' ')}'"
 
-    ignore_interrupts(:quietly) do # the fork will receive the interrupt and marshall it back
-      write.close
-      Process.wait
-      raise Interrupt if $?.exitstatus == 130
-      raise "Suspicious installation failure" unless $?.success?
-    end
+    puts "Running #{command}"
+    Process.spawn command
+
+    puts 'Waiting for process...'
+    Process.wait
+    puts 'Done waiting for process'
+    raise Interrupt if $?.exitstatus == 130
+    raise "Suspicious installation failure" unless $?.success?
 
     raise "Empty installation" if Dir["#{f.prefix}/*"].empty?
 
