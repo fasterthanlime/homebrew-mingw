@@ -15,24 +15,17 @@ def cache
   if ENV['HOMEBREW_CACHE']
     Pathname.new(ENV['HOMEBREW_CACHE'])
   else
-    # we do this for historic reasons, however the cache *should* be the same
-    # directory whichever user is used and whatever instance of brew is executed
-    home_cache = Pathname.new("~/Library/Caches/Homebrew").expand_path
-    if home_cache.directory? and home_cache.writable_real?
-      home_cache
-    else
-      root_cache = Pathname.new("/Library/Caches/Homebrew")
-      class << root_cache
-        alias :oldmkpath :mkpath
-        def mkpath
-          unless exist?
-            oldmkpath
-            chmod 0777
-          end
+    root_cache = Pathname.new("C:/MinGW/msys/1.0/local/Library/Caches/Homebrew")
+    class << root_cache
+      alias :oldmkpath :mkpath
+      def mkpath
+        unless exist?
+          oldmkpath
+          chmod 0777
         end
       end
-      root_cache
     end
+    root_cache
   end
 end
 

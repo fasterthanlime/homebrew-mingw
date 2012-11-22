@@ -26,7 +26,6 @@ class PkgConfig < Formula
         --with-pc-path=#{paths*':'}
         --with-internal-glib
       ]
-    args << "CC=#{ENV.cc} #{ENV.cflags}" unless MacOS::CLT.installed?
 
     system "./configure", *args
 

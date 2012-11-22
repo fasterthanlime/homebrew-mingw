@@ -81,19 +81,17 @@ class CurlDownloadStrategy < AbstractDownloadStrategy
   def stage
     case @tarball_path.compression_type
     when :zip
-      quiet_safe_system '/usr/bin/unzip', {:quiet_flag => '-qq'}, @tarball_path
+      quiet_safe_system 'unzip', {:quiet_flag => '-qq'}, @tarball_path
       chdir
     when :gzip, :bzip2, :compress, :tar
       # Assume these are also tarred
       # TODO check if it's really a tar archive
-      safe_system '/usr/bin/tar', 'xf', @tarball_path
+      # --force-local is needed for window paths with a ':' in them
+      safe_system 'tar', '--force-local', '-xf', @tarball_path
       chdir
     when :xz
       raise "You must install XZutils: brew install xz" unless which "xz"
       safe_system "xz -dc \"#{@tarball_path}\" | /usr/bin/tar xf -"
-      chdir
-    when :pkg
-      safe_system '/usr/sbin/pkgutil', '--expand', @tarball_path, File.basename(@url)
       chdir
     when :rar
       raise "You must install unrar: brew install unrar" unless which "unrar"
