@@ -521,30 +521,18 @@ protected
       logfn = "#{logd}/%02d.%s" % [@exec_count, File.basename(cmd).split(' ').first]
       mkdir_p(logd)
 
-      rd, wr = IO.pipe
-      pid = fork do
-        rd.close
-        $stdout.reopen wr
-        $stderr.reopen wr
-        args.collect!{|arg| arg.to_s}
-        exec(cmd, *args) rescue nil
-        puts "Failed to execute: #{cmd}"
-        exit! 1 # never gets here unless exec threw or failed
-      end
-      wr.close
-
-      f = File.open(logfn, 'w')
-      f.write(rd.read) until rd.eof?
+      args.collect!{|arg| arg.to_s}
+      fullcmd = [cmd, *args].join(' ')
+      Process.spawn "sh -c '#{fullcmd}'", [:out, :err] => [logfn, "w"]
 
       Process.wait
 
       unless $?.success?
         unless ARGV.verbose?
-          f.flush
-          Kernel.system "/usr/bin/tail -n 5 #{logfn}"
+          Kernel.system "tail -n 5 #{logfn}"
         end
-        f.puts
         require 'cmd/--config'
+        f = File.open(logfn, 'w')
         Homebrew.write_build_config(f)
         raise ErrorDuringExecution
       end
