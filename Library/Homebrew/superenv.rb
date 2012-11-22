@@ -40,7 +40,7 @@ class << ENV
   def setup_build_environment
     reset
     check
-    ENV['CC'] = 'cc'
+    ENV['CC'] = 'gcc'
     ENV['CXX'] = 'c++'
     ENV['OBJC'] = 'cc'
     ENV['OBJCXX'] = 'c++'
@@ -100,7 +100,7 @@ class << ENV
   def determine_path
     paths = [superbin]
     paths += all_deps.map{|dep| "#{HOMEBREW_PREFIX}/opt/#{dep}/bin" }
-    paths += %w{C:/MinGW/msys/1.0/bin}
+    paths += %w{C:/MinGW/msys/1.0/bin C:/MinGW/bin}
     paths.to_path_s
   end
 

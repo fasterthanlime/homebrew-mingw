@@ -72,8 +72,8 @@ class Formula
 
   # if the dir is there, but it's empty we consider it not installed
   def installed?
-    return installed_prefix.children.length > 0
-  rescue
+    nstalled_prefix.children.length > 0
+  rescue => e
     return false
   end
 
@@ -529,18 +529,20 @@ protected
 
       unless $?.success?
         unless ARGV.verbose?
-          Kernel.system "tail -n 5 #{logfn}"
+          #Kernel.system "tail -n 5 #{logfn}"
+          Kernel.system "cat #{logfn}"
         end
+        #f = File.open(logfn, 'w')
+        #Homebrew.write_build_config(f)
         require 'cmd/--config'
-        f = File.open(logfn, 'w')
-        Homebrew.write_build_config(f)
+        exit 1
         raise ErrorDuringExecution
       end
     end
   rescue ErrorDuringExecution => e
     raise BuildError.new(self, cmd, args, $?)
   ensure
-    f.close if f and not f.closed?
+    #f.close if f and not f.closed?
     removed_ENV_variables.each do |key, value|
       ENV[key] = value
     end if removed_ENV_variables

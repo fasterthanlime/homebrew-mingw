@@ -23,6 +23,7 @@ class FormulaInstaller
   end
 
   def check_install_sanity
+    puts "check_install_sanity"
     if f.installed?
       msg = "#{f}-#{f.installed_version} already installed"
       msg << ", it's just not linked" if not f.linked_keg.symlink? and not f.keg_only?
@@ -64,7 +65,7 @@ class FormulaInstaller
     if f.linked_keg.directory?
       # some other version is already installed *and* linked
       raise CannotInstallFormulaError, <<-EOS.undent
-        #{f}-#{f.linked_keg.realpath.basename} already installed
+        #{f}-#{f.linked_keg.realpath.basename} already installed at #{f.linked_keg}
         To install this version, first `brew unlink #{f}'
       EOS
     end
@@ -225,7 +226,7 @@ class FormulaInstaller
     args << '--build-from-source'
     args.uniq! # Just in case some dupes were added
 
-    args = [
+    cmdargs = [
       'ruby',
       '-I', 
       Pathname.new(__FILE__).dirname,
@@ -234,7 +235,7 @@ class FormulaInstaller
       f.path,
       *args.options_only
     ]
-    command = "sh -c '#{args.join(' ')}'"
+    command = "sh -c '#{cmdargs.join(' ')}'"
 
     puts "Running #{command}"
     Process.spawn command
@@ -252,8 +253,9 @@ class FormulaInstaller
   rescue Exception => e
     ignore_interrupts do
       # any exceptions must leave us with nothing installed
-      f.prefix.rmtree if f.prefix.directory?
-      f.rack.rmdir_if_possible
+      ohai "Should remove #{f.prefix} but leaving it for inspection"
+      #f.prefix.rmtree if f.prefix.directory?
+      #f.rack.rmdir_if_possible
     end
     raise
   end
