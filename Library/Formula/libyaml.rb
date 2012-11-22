@@ -39,3 +39,14 @@ index 5a04d36..9b9d9a4 100644
  #   if defined(YAML_DECLARE_STATIC)
  #       define  YAML_DECLARE(type)  type
  #   elif defined(YAML_DECLARE_EXPORT)
+diff --git a/yaml-0.1.pc.in b/yaml-0.1.pc.in
+index c566abf..70c8008 100644
+--- a/yaml-0.1.pc.in
++++ b/yaml-0.1.pc.in
+@@ -6,5 +6,5 @@ libdir=@libdir@
+ Name: LibYAML
+ Description: Library to parse and emit YAML
+ Version: @PACKAGE_VERSION@
+-Cflags:
++Cflags: -I${includedir}
+ Libs: -L${libdir} -lyaml
