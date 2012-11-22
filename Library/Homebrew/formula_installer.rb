@@ -23,7 +23,6 @@ class FormulaInstaller
   end
 
   def check_install_sanity
-    puts "check_install_sanity"
     if f.installed?
       msg = "#{f}-#{f.installed_version} already installed"
       msg << ", it's just not linked" if not f.linked_keg.symlink? and not f.keg_only?
@@ -237,12 +236,9 @@ class FormulaInstaller
     ]
     command = "sh -c '#{cmdargs.join(' ')}'"
 
-    puts "Running #{command}"
     Process.spawn command
 
-    puts 'Waiting for process...'
     Process.wait
-    puts 'Done waiting for process'
     raise Interrupt if $?.exitstatus == 130
     raise "Suspicious installation failure" unless $?.success?
 
@@ -383,7 +379,7 @@ class FormulaInstaller
   def check_non_libraries
     return unless f.lib.directory?
 
-    valid_extensions = %w(.a .dylib .framework .jnilib .la .o .so
+    valid_extensions = %w(.a .dll .lib .jnilib .la .o .so
                           .jar .prl .pm .sh)
     non_libraries = f.lib.children.select do |g|
       next if g.directory?

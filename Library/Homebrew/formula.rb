@@ -72,7 +72,7 @@ class Formula
 
   # if the dir is there, but it's empty we consider it not installed
   def installed?
-    nstalled_prefix.children.length > 0
+    installed_prefix.children.length > 0
   rescue => e
     return false
   end
