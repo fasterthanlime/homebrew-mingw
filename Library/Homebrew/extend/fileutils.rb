@@ -13,7 +13,7 @@ module FileUtils extend self
     # If the user has FileVault enabled, then we can't mv symlinks from the
     # /tmp volume to the other volume. So we let the user override the tmp
     # prefix if they need to.
-    tmp = ENV['HOMEBREW_TEMP'].chuzzle || '/tmp'
+    tmp = ENV['HOMEBREW_TEMP'].chuzzle || "C:/tmp"
     tempd = `mktemp -d #{tmp}/#{name}-XXXX`.chuzzle
     raise "Failed to create sandbox" if tempd.nil?
     prevd = pwd
