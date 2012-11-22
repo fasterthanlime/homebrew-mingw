@@ -398,7 +398,11 @@ class FormulaInstaller
   def audit_bin
     return unless f.bin.directory?
 
-    non_exes = f.bin.children.select { |g| g.directory? or not g.executable? }
+    valid_extensions = %w(.exe)
+    non_libraries = f.bin.children.select do |g|
+      next if g.directory?
+      not valid_extensions.include? g.extname
+    end
 
     unless non_exes.empty?
       opoo 'Non-executables were installed to "bin".'
@@ -412,7 +416,11 @@ class FormulaInstaller
   def audit_sbin
     return unless f.sbin.directory?
 
-    non_exes = f.sbin.children.select { |g| g.directory? or not g.executable? }
+    valid_extensions = %w(.exe)
+    non_libraries = f.sbin.children.select do |g|
+      next if g.directory?
+      not valid_extensions.include? g.extname
+    end
 
     unless non_exes.empty?
       opoo 'Non-executables were installed to "sbin".'
