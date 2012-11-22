@@ -399,7 +399,7 @@ class FormulaInstaller
     return unless f.bin.directory?
 
     valid_extensions = %w(.exe)
-    non_libraries = f.bin.children.select do |g|
+    non_exes = f.bin.children.select do |g|
       next if g.directory?
       not valid_extensions.include? g.extname
     end
@@ -417,7 +417,7 @@ class FormulaInstaller
     return unless f.sbin.directory?
 
     valid_extensions = %w(.exe)
-    non_libraries = f.sbin.children.select do |g|
+    non_exes = f.sbin.children.select do |g|
       next if g.directory?
       not valid_extensions.include? g.extname
     end

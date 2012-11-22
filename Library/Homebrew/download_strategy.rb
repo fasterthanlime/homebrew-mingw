@@ -90,8 +90,8 @@ class CurlDownloadStrategy < AbstractDownloadStrategy
       safe_system 'tar', '--force-local', '-xf', @tarball_path
       chdir
     when :xz
-      raise "You must install XZutils: brew install xz" unless which "xz"
-      safe_system "xz -dc \"#{@tarball_path}\" | /usr/bin/tar xf -"
+      #raise "You must install XZutils: brew install xz" unless which "xz"
+      safe_system "xz -dc \"#{@tarball_path}\" | tar xf -"
       chdir
     when :rar
       raise "You must install unrar: brew install unrar" unless which "unrar"
