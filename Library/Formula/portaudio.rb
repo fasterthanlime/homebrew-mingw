@@ -7,6 +7,10 @@ class Portaudio < Formula
 
   depends_on 'pkg-config' => :build
 
+  def patches
+    DATA
+  end
+
   def install
     args = [ "--prefix=#{prefix}",
              "--disable-debug",
@@ -15,3 +19,16 @@ class Portaudio < Formula
     system "make install"
   end
 end
+
+__END__
+diff --git a/portaudio-2.0.pc.in b/portaudio-2.0.pc.in
+index f5c1969..01763eb 100644
+--- a/portaudio-2.0.pc.in
++++ b/portaudio-2.0.pc.in
+@@ -8,5 +8,5 @@ Description: Portable audio I/O
+ Requires:
+ Version: 19
+
+-Libs: -L${libdir} -lportaudio @LIBS@
++Libs: ${libdir}/libportaudio.lib @LIBS@
+ Cflags: -I${includedir} @THREAD_CFLAGS@
