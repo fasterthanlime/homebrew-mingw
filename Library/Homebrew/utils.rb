@@ -14,7 +14,6 @@ class Tty
     def gray; bold 30 end
 
     def width
-      puts ENV['PATH']
       `stty size`.split(' ')[1].to_i
     end
 
@@ -91,12 +90,9 @@ end
 module Homebrew
   def self.system cmd, *args
     puts "#{cmd} #{args*' '}" if ARGV.verbose?
-    fork do
-      yield if block_given?
-      args.collect!{|arg| arg.to_s}
-      exec(cmd, *args) rescue nil
-      exit! 1 # never gets here unless exec failed
-    end
+    
+    args.collect!{|arg| arg.to_s}
+    Process.spawn cmd, *args
     Process.wait
     $?.success?
   end
@@ -121,8 +117,9 @@ def quiet_system cmd, *args
 end
 
 def curl *args
-  curl = Pathname.new '/usr/bin/curl'
-  raise "#{curl} is not executable" unless curl.exist? and curl.executable?
+  ##curl = Pathname.new `/usr/bin/curl`
+  ##raise "#{curl} is not executable" unless curl.exist? and curl.executable?
+  curl = 'curl'
 
   args = [HOMEBREW_CURL_ARGS, HOMEBREW_USER_AGENT, *args]
   # See https://github.com/mxcl/homebrew/issues/6103

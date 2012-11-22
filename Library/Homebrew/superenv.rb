@@ -246,10 +246,7 @@ end
 
 class Array
   def to_path_s
-    puts "Original paths = #{self}"
-    result = map(&:to_s).uniq.select{|s| File.directory? s }.join(';').chuzzle
-    puts "result = #{result}"
-    result
+    map(&:to_s).uniq.select{|s| File.directory? s }.join(';').chuzzle
   end
 end
 

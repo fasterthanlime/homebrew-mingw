@@ -6,8 +6,6 @@
 
 STD_TRAP = trap("INT") { exit! 130 } # no backtrace thanks
 
-puts ENV['PATH']
-
 at_exit do
   # the whole of everything must be run in at_exit because the formula has to
   # be the run script as __END__ must work for *that* formula.
