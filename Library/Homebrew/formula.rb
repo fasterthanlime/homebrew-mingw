@@ -593,7 +593,7 @@ private
         when :bzip2 then safe_system "/usr/bin/bunzip2", p.compressed_filename
       end
       # -f means don't prompt the user if there are errors; just exit with non-zero status
-      safe_system '/usr/bin/patch', '-f', *(p.patch_args)
+      safe_system 'patch', '-f', *(p.patch_args)
     end
   end
 
