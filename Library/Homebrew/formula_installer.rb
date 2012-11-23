@@ -249,9 +249,8 @@ class FormulaInstaller
   rescue Exception => e
     ignore_interrupts do
       # any exceptions must leave us with nothing installed
-      ohai "Should remove #{f.prefix} but leaving it for inspection"
-      #f.prefix.rmtree if f.prefix.directory?
-      #f.rack.rmdir_if_possible
+      f.prefix.rmtree if f.prefix.directory?
+      f.rack.rmdir_if_possible
     end
     raise
   end
