@@ -34,10 +34,8 @@ class Python < Formula
   depends_on 'pkg-config' => :build
   depends_on 'readline' => :recommended
   depends_on 'sqlite' => :recommended
-  depends_on 'gdbm' => :recommended
   depends_on 'openssl' if build.include? 'with-brewed-openssl'
 
-  option :universal
   option 'quicktest', 'Run `make quicktest` after the build'
   option 'with-brewed-openssl', "Use Homebrew's openSSL instead of the one from OS X"
   option 'with-poll', 'Enable select.poll, which is not fully implemented on OS X (http://bugs.python.org/issue5154)'
@@ -74,7 +72,7 @@ class Python < Formula
 
     args = %W[
              --prefix=#{prefix}
-             --enable-ipv6
+             --disable-ipv6
              --datarootdir=#{share}
              --datadir=#{share}
              --enable-framework=#{prefix}/Frameworks
@@ -188,19 +186,9 @@ class Python < Formula
       cflags = "CFLAGS=-I#{HOMEBREW_PREFIX}/include"
       ldflags = "LDFLAGS=-L#{HOMEBREW_PREFIX}/lib"
       unless MacOS::CLT.installed?
-        # Help Python's build system (distribute/pip) to build things on Xcode-only systems
-        # The setup.py looks at "-isysroot" to get the sysroot (and not at --sysroot)
-        cflags += " -isysroot #{MacOS.sdk_path}"
-        # For the Xlib.h, Python needs this header dir
-        cflags += " -I#{MacOS.sdk_path}/System/Library/Frameworks/Tk.framework/Versions/8.5/Headers"
-        ldflags += " -isysroot #{MacOS.sdk_path}"
-        # Same zlib.h-not-found-bug as in env :std (see below)
-        args << "CPPFLAGS=-I#{MacOS.sdk_path}/usr/include"
       end
       args << cflags
       args << ldflags
-      # Avoid linking to libgcc http://code.activestate.com/lists/python-dev/112195/
-      args << "MACOSX_DEPLOYMENT_TARGET=#{MacOS.version}"
       # We want our readline! This is just to outsmart the detection code,
       # superenv handles that cc finds includes/libs!
       inreplace "setup.py",

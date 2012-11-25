@@ -7,19 +7,6 @@ class Pixman < Formula
 
   depends_on 'pkg-config' => :build
 
-  keg_only :provided_pre_mountain_lion
-
-  option :universal
-
-  fails_with :llvm do
-    build 2336
-    cause <<-EOS.undent
-      Building with llvm-gcc causes PDF rendering issues in Cairo.
-      https://trac.macports.org/ticket/30370
-      See Homebrew issues #6631, #7140, #7463, #7523.
-      EOS
-  end
-
   def install
     ENV.universal_binary if build.universal?
 
