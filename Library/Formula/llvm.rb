@@ -15,13 +15,6 @@ class Llvm < Formula
 
   head      'http://llvm.org/git/llvm.git'
 
-  bottle do
-    sha1 'fcf6c3eb5b074afa820f905f32182e074a29ffb5' => :mountainlion
-    sha1 '4ee3e9242cff9a03af4e1f20017fe547dcd07a4a' => :lion
-    sha1 '940aca37dafaf69a9b378ffd2a59b3c1cfe54ced' => :snowleopard
-  end
-
-  option :universal
   option 'with-clang', 'Build Clang C/ObjC/C++ frontend'
   option 'shared', 'Build LLVM as a shared library'
   option 'all-targets', 'Build all target backends'
@@ -34,11 +27,6 @@ class Llvm < Formula
     end
 
     Clang.new("clang").brew { clang_dir.install Dir['*'] } if build.include? 'with-clang'
-
-    if build.universal?
-      ENV['UNIVERSAL'] = '1'
-      ENV['UNIVERSAL_ARCH'] = 'i386 x86_64'
-    end
 
     ENV['REQUIRES_RTTI'] = '1' if build.include? 'rtti'
 
