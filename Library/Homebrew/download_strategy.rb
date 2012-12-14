@@ -309,7 +309,7 @@ end
 class GitDownloadStrategy < AbstractDownloadStrategy
   def initialize name, package
     super
-    @@git ||= 'git'
+    @@git ||= 'C://Program Files (x86)/Git/bin/git'
     @unique_token="#{name}--git" unless name.to_s.empty? or name == '__UNKNOWN__'
     @clone=HOMEBREW_CACHE+@unique_token
   end
@@ -327,8 +327,6 @@ class GitDownloadStrategy < AbstractDownloadStrategy
   end
 
   def fetch
-    raise "You must: brew install git" unless which "git"
-
     ohai "Cloning #{@url}"
 
     if @clone.exist?

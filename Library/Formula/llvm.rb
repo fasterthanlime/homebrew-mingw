@@ -16,16 +16,10 @@ class Llvm < Formula
   head      'http://llvm.org/git/llvm.git'
 
   option 'with-clang', 'Build Clang C/ObjC/C++ frontend'
-  option 'shared', 'Build LLVM as a shared library'
   option 'all-targets', 'Build all target backends'
   option 'rtti', 'Build with C++ RTTI'
 
   def install
-    if build.universal? and build.include? 'shared'
-      onoe "Cannot specify both shared and universal (will not build)"
-      exit 1
-    end
-
     Clang.new("clang").brew { clang_dir.install Dir['*'] } if build.include? 'with-clang'
 
     ENV['REQUIRES_RTTI'] = '1' if build.include? 'rtti'
@@ -38,12 +32,9 @@ class Llvm < Formula
       "--disable-bindings",
     ]
 
-    if build.include? 'all-targets'
-      args << "--enable-targets=all"
-    else
-      args << "--enable-targets=host"
-    end
-    args << "--enable-shared" if build.include? 'shared'
+    args << "--enable-targets=host"
+    args << "--disable-liblto"
+    args << "--disable-libhello"
 
     system "./configure", *args
     system "make install"

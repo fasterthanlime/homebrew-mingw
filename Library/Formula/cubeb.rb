@@ -7,13 +7,6 @@ class Cubeb < Formula
 
   depends_on 'pkg-config' => :build
 
-  if build.head?
-    depends_on :automake
-    depends_on :libtool
-  end
-
-  option :universal
-
   def install
     ENV.universal_binary if build.universal?
 
