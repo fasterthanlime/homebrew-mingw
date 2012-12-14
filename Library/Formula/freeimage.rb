@@ -3,7 +3,7 @@ require 'formula'
 class FreeimageHttpDownloadStrategy < CurlDownloadStrategy
   def stage
     # need to convert newlines or patch chokes
-    safe_system '/usr/bin/unzip', '-aaqq', @tarball_path
+    safe_system 'unzip', '-aaqq', @tarball_path
     chdir
   end
 end
@@ -22,123 +22,96 @@ class Freeimage < Formula
   end
 
   def install
-    ENV.universal_binary if build.universal?
-    system "make", "-f", "Makefile.gnu"
-    system "make", "-f", "Makefile.gnu", "install", "PREFIX=#{prefix}"
-    system "make", "-f", "Makefile.fip"
-    system "make", "-f", "Makefile.fip", "install", "PREFIX=#{prefix}"
+    system "make", "-f", "Makefile.mingw"
+    system "make", "-f", "Makefile.mingw", "install", "PREFIX=#{prefix}", "INCDIR=#{include}", "INSTALLDIR=#{lib}"
   end
 end
 
 __END__
-diff --git a/Makefile.fip b/Makefile.fip
-index f4336d2..15e8c00 100644
---- a/Makefile.fip
-+++ b/Makefile.fip
-@@ -5,8 +5,9 @@ include fipMakefile.srcs
-
+diff --git a/Makefile.mingw b/Makefile.mingw
+index 7b27892..6218ab3 100644
+--- a/Makefile.mingw
++++ b/Makefile.mingw
+@@ -4,8 +4,8 @@
+ include Makefile.srcs
+ 
  # General configuration variables:
- DESTDIR ?= /
--INCDIR ?= $(DESTDIR)/usr/include
--INSTALLDIR ?= $(DESTDIR)/usr/lib
-+PREFIX ?= /usr/local
-+INCDIR ?= $(DESTDIR)$(PREFIX)/include
-+INSTALLDIR ?= $(DESTDIR)$(PREFIX)/lib
-
- # Converts cr/lf to just lf
- DOS2UNIX = dos2unix
-@@ -27,8 +28,8 @@ endif
-
- TARGET  = freeimageplus
- STATICLIB = lib$(TARGET).a
--SHAREDLIB = lib$(TARGET)-$(VER_MAJOR).$(VER_MINOR).so
--LIBNAME	= lib$(TARGET).so
-+SHAREDLIB = lib$(TARGET)-$(VER_MAJOR).$(VER_MINOR).dylib
-+LIBNAME	= lib$(TARGET).dylib
- VERLIBNAME = $(LIBNAME).$(VER_MAJOR)
- HEADER = Source/FreeImage.h
- HEADERFIP = Wrapper/FreeImagePlus/FreeImagePlus.h
-@@ -40,7 +41,7 @@ all: dist
-
- dist: FreeImage
- 	cp *.a Dist
--	cp *.so Dist
-+	cp *.dylib Dist
- 	cp Source/FreeImage.h Dist
-	cp Wrapper/FreeImagePlus/FreeImagePlus.h Dist
-
-@@ -59,14 +60,15 @@ $(STATICLIB): $(MODULES)
-	$(AR) r $@ $(MODULES)
-
- $(SHAREDLIB): $(MODULES)
--	$(CC) -s -shared -Wl,-soname,$(VERLIBNAME) $(LDFLAGS) -o $@ $(MODULES) $(LIBRARIES)
-+	$(CXX) -dynamiclib -install_name $(LIBNAME) -current_version $(VER_MAJOR).$(VER_MINOR) -compatibility_version $(VER_MAJOR) $(LDFLAGS) -o $@ $(MODULES)
-
+-DESTDIR ?= $(SystemRoot)
+-INSTALLDIR ?= $(DESTDIR)/system32
++INCDIR ?= $(PREFIX)/include/
++INSTALLDIR ?= $(PREFIX)/lib/
+ DISTDIR ?= Dist
+ SRCDIR ?= Source
+ HEADER = FreeImage.h
+@@ -37,14 +37,26 @@ CP = cp
+ # Define the mkdir command
+ MD = mkdir
+ 
+-# Define additional libraries needed:
++# Define the rm command
++RM = rm
++
++# Define additional libraries needed.
+ # libstdc++ is included by default with MinGW, however for
+ # WIN32 based builds, LibRawLite needs the winsock libraries.
+ LIBRARIES = -lwsock32 -lws2_32
+ 
+-# Define some additional symboles only needed for WIN32 based builds:
+-WIN32_CFLAGS = $(LIB_TYPE_FLAGS) -DOPJ_STATIC
+-WIN32_CXXFLAGS = $(WIN32_CFLAGS) -DLIBRAW_NODLL -DLIBRAW_LIBRARY_BUILD
++# Define some additional symboles needed for WIN32 based builds.
++WIN32_CFLAGS = -DWINVER=0x0500 $(LIB_TYPE_FLAGS) -DOPJ_STATIC
++WIN32_CXXFLAGS = $(WIN32_CFLAGS) -DLIBRAW_NODLL
++
++# Workaround for LibRawLite, which does not include C++ header
++# file stdexcept, which is casually included with MSVC but not
++# with MinGW. This can be removed after LibRawLite got control
++# over its includes again.
++WIN32_CXXFLAGS += -include stdexcept 
++
++# Define DLL image header information flags for the linker.
++WIN32_LDFLAGS = -Wl,--subsystem,windows:5.0,--major-os-version,5 -lws2_32
+ 
+ WIN32_STATIC_FLAGS = -DFREEIMAGE_LIB
+ WIN32_SHARED_FLAGS = -DFREEIMAGE_EXPORTS
+@@ -54,14 +66,14 @@ MODULES := $(MODULES:.cpp=.o)
+ RESOURCE = $(RCFILE:.rc=.coff)
+ CFLAGS ?= -O3 -fexceptions -DNDEBUG $(WIN32_CFLAGS)
+ CFLAGS += $(INCLUDE)
+-CXXFLAGS ?= -O3 -fexceptions -Wno-ctor-dtor-privacy -DNDEBUG $(WIN32_CXXFLAGS) -DNO_LCMS
++CXXFLAGS ?= -O3 -fexceptions -Wno-ctor-dtor-privacy -DNDEBUG $(WIN32_CXXFLAGS)
+ CXXFLAGS += $(INCLUDE)
+ RCFLAGS ?= -DNDEBUG
+-LDFLAGS = -s -shared -static -Wl,-soname,$(SOLIBNAME)
+-DLLTOOLFLAGS = --add-stdcall-underscore
++LDFLAGS ?= -s -shared -static -Wl,-soname,$(SOLIBNAME) $(WIN32_LDFLAGS)
++DLLTOOLFLAGS ?= --add-stdcall-underscore
+ 
+ TARGET = FreeImage
+-STATICLIB = $(TARGET).a
++STATICLIB = lib$(TARGET).a
+ SHAREDLIB = $(TARGET).dll
+ IMPORTLIB = $(TARGET).lib
+ EXPORTLIB = $(TARGET).exp
+@@ -70,7 +82,7 @@ SOLIBNAME = $(SHAREDLIB).$(VER_MAJOR)
+ DISTSHARED = $(addprefix $(DISTDIR)/, $(SHAREDLIB) $(IMPORTLIB) $(HEADER))
+ DISTSTATIC = $(addprefix $(DISTDIR)/, $(STATICLIB) $(HEADER))
+ 
+-# The FreeImage library type defaults to SHARED
++# The FreeImage library type defaults to SHARED.
+ FREEIMAGE_LIBRARY_TYPE ?= SHARED
+ 
+ TARGETLIB = $($(FREEIMAGE_LIBRARY_TYPE)LIB)
+@@ -117,7 +129,11 @@ $(DISTDIR):
+ $(TARGETDIST): $(DISTDIR)
+ 
  install:
-	install -d $(INCDIR) $(INSTALLDIR)
--	install -m 644 -o root -g root $(HEADER) $(INCDIR)
--	install -m 644 -o root -g root $(HEADERFIP) $(INCDIR)
--	install -m 644 -o root -g root $(STATICLIB) $(INSTALLDIR)
--	install -m 755 -o root -g root $(SHAREDLIB) $(INSTALLDIR)
-+	install -m 644 $(HEADER) $(INCDIR)
-+	install -m 644 $(HEADERFIP) $(INCDIR)
-+	install -m 644 $(STATICLIB) $(INSTALLDIR)
-+	install -m 755 $(SHAREDLIB) $(INSTALLDIR)
-+	ln -s $(SHAREDLIB) $(INSTALLDIR)/$(LIBNAME)
-
++	$(MD) $(INSTALLDIR)
+ 	$(CP) $(SHAREDLIB) $(INSTALLDIR)
++	$(CP) $(IMPORTLIB) $(INSTALLDIR)
++	$(MD) $(INCDIR)
++	$(CP) $(SRCDIR)/$(HEADER) $(INCDIR)
+ 
  clean:
-	rm -f core Dist/*.* u2dtmp* $(MODULES) $(STATICLIB) $(SHAREDLIB) $(LIBNAME)
-diff --git a/Makefile.gnu b/Makefile.gnu
-index 0c967b8..e50ed7f 100644
---- a/Makefile.gnu
-+++ b/Makefile.gnu
-@@ -5,8 +5,9 @@ include Makefile.srcs
-
- # General configuration variables:
- DESTDIR ?= /
--INCDIR ?= $(DESTDIR)/usr/include
--INSTALLDIR ?= $(DESTDIR)/usr/lib
-+PREFIX ?= /usr/local
-+INCDIR ?= $(DESTDIR)$(PREFIX)/include
-+INSTALLDIR ?= $(DESTDIR)$(PREFIX)/lib
-
- # Converts cr/lf to just lf
- DOS2UNIX = dos2unix
-@@ -27,8 +28,8 @@ endif
-
- TARGET  = freeimage
- STATICLIB = lib$(TARGET).a
--SHAREDLIB = lib$(TARGET)-$(VER_MAJOR).$(VER_MINOR).so
--LIBNAME	= lib$(TARGET).so
-+SHAREDLIB = lib$(TARGET)-$(VER_MAJOR).$(VER_MINOR).dylib
-+LIBNAME	= lib$(TARGET).dylib
- VERLIBNAME = $(LIBNAME).$(VER_MAJOR)
- HEADER = Source/FreeImage.h
-
-@@ -40,7 +41,7 @@ all: dist
-
- dist: FreeImage
-	cp *.a Dist
--	cp *.so Dist
-+	cp *.dylib Dist
-	cp Source/FreeImage.h Dist
-
- dos2unix:
-@@ -58,13 +59,13 @@ $(STATICLIB): $(MODULES)
-	$(AR) r $@ $(MODULES)
-
- $(SHAREDLIB): $(MODULES)
--	$(CC) -s -shared -Wl,-soname,$(VERLIBNAME) $(LDFLAGS) -o $@ $(MODULES) $(LIBRARIES)
-+	$(CXX) -dynamiclib -install_name $(LIBNAME) -current_version $(VER_MAJOR).$(VER_MINOR) -compatibility_version $(VER_MAJOR) $(LDFLAGS) -o $@ $(MODULES)
-
- install:
- 	install -d $(INCDIR) $(INSTALLDIR)
--	install -m 644 -o root -g root $(HEADER) $(INCDIR)
--	install -m 644 -o root -g root $(STATICLIB) $(INSTALLDIR)
--	install -m 755 -o root -g root $(SHAREDLIB) $(INSTALLDIR)
-+	install -m 644 $(HEADER) $(INCDIR)
-+	install -m 644 $(STATICLIB) $(INSTALLDIR)
-+	install -m 755 $(SHAREDLIB) $(INSTALLDIR)
-	ln -sf $(SHAREDLIB) $(INSTALLDIR)/$(VERLIBNAME)
-	ln -sf $(VERLIBNAME) $(INSTALLDIR)/$(LIBNAME)
- #	ldconfig
+-	$(RM) core $(DISTDIR)/*.* $(MODULES) $(RESOURCE) $(STATICLIB) $(SHAREDLIB) $(IMPORTLIB) $(EXPORTLIB)
++	$(RM) -f core $(DISTDIR)/*.* $(MODULES) $(RESOURCE) $(STATICLIB) $(SHAREDLIB) $(IMPORTLIB) $(EXPORTLIB)
