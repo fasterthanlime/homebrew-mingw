@@ -12,7 +12,7 @@ class Ftgl < Formula
     # So we disable building docs.
     inreplace "configure", "set dummy doxygen;", "set dummy no_doxygen;"
 
-    system "./configure", "--disable-debug", "--disable-dependency-tracking",
+    system "sh", "configure", "--disable-debug", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--disable-freetypetest",
     # Skip building the example program by failing to find GLUT (MacPorts)
