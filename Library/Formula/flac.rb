@@ -26,7 +26,6 @@ class Flac < Formula
                           "--enable-sse",
                           "--prefix=#{prefix}",
                           "--mandir=#{man}"
-    ENV['OBJ_FORMAT']='macho'
     system "make install"
 
     Flac2Mp3.new.brew {|f| bin.install 'flac2mp3'}

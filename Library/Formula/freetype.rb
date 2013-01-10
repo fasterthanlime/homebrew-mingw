@@ -7,7 +7,7 @@ class Freetype < Formula
 
   def install
     ENV.universal_binary if build.universal?
-    system "sh", "./configure", "--prefix=#{prefix}"
+    system "./configure", "--prefix=#{prefix}"
     system "make install"
   end
 

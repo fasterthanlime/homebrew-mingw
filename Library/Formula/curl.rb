@@ -27,7 +27,7 @@ class Curl < Formula
     args << "--with-libssh2" if build.include? 'with-ssh'
     args << "--with-libmetalink" if build.include? 'with-libmetalink'
 
-    system "sh", "configure", *args
+    system "./configure", *args
     system "make install"
   end
 end

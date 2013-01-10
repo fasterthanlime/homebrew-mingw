@@ -56,55 +56,13 @@ class Nginx < Formula
     args << passenger_config_args if build.include? 'with-passenger'
     args << "--with-http_dav_module" if build.include? 'with-webdav'
 
-    system "./configure", *args
+    system "sh", "configure", *args
     system "make"
     system "make install"
     man8.install "objs/nginx.8"
     (var/'run/nginx').mkpath
   end
 
-  def caveats; <<-EOS.undent
-    In the interest of allowing you to run `nginx` without `sudo`, the default
-    port is set to localhost:8080.
-
-    If you want to host pages on your local machine to the public, you should
-    change that to localhost:80, and run `sudo nginx`. You'll need to turn off
-    any other web servers running port 80, of course.
-
-    You can start nginx automatically on login running as your user with:
-      mkdir -p ~/Library/LaunchAgents
-      cp #{plist_path} ~/Library/LaunchAgents/
-      launchctl load -w ~/Library/LaunchAgents/#{plist_path.basename}
-
-    Though note that if running as your user, the launch agent will fail if you
-    try to use a port below 1024 (such as http's default of 80.)
-    EOS
-  end
-
-  def startup_plist
-    return <<-EOPLIST
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-  <dict>
-    <key>Label</key>
-    <string>#{plist_name}</string>
-    <key>RunAtLoad</key>
-    <true/>
-    <key>KeepAlive</key>
-    <false/>
-    <key>UserName</key>
-    <string>#{`whoami`.chomp}</string>
-    <key>ProgramArguments</key>
-    <array>
-        <string>#{HOMEBREW_PREFIX}/sbin/nginx</string>
-    </array>
-    <key>WorkingDirectory</key>
-    <string>#{HOMEBREW_PREFIX}</string>
-  </dict>
-</plist>
-    EOPLIST
-  end
 end
 
 __END__

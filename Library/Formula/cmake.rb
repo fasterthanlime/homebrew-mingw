@@ -34,7 +34,7 @@ class Cmake < Formula
       --mandir=/share/man
     ]
 
-    system "sh", "bootstrap", *args
+    system "./bootstrap", *args
     system "make"
     system "make install"
   end

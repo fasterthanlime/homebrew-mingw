@@ -40,21 +40,7 @@ module MacOS extend self
   end
 
   def dev_tools_path
-    @dev_tools_path ||= if File.exist? "/usr/bin/cc" and File.exist? "/usr/bin/make"
-      # probably a safe enough assumption (the unix way)
-      Pathname.new "/usr/bin"
-    # Note that the exit status of system "xcrun foo" isn't always accurate
-    elsif not Xcode.bad_xcode_select_path? and not `/usr/bin/xcrun -find make 2>/dev/null`.empty?
-      # Wherever "make" is there are the dev tools.
-      Pathname.new(`/usr/bin/xcrun -find make`.chomp).dirname
-    elsif File.exist? "#{Xcode.prefix}/usr/bin/make"
-      # cc stopped existing with Xcode 4.3, there are c89 and c99 options though
-      Pathname.new "#{Xcode.prefix}/usr/bin"
-    else
-      # Since we are pretty unrelenting in finding Xcode no matter where
-      # it hides, we can now throw in the towel.
-      opoo "Could not locate developer tools. Consult `brew doctor`."
-    end
+    @dev_tools_path ||= Pathname.new "/usr/bin"
   end
 
   def xctoolchain_path

@@ -462,6 +462,7 @@ class MercurialDownloadStrategy < AbstractDownloadStrategy
       #{which("hg")}
       #{HOMEBREW_PREFIX}/bin/hg
       #{HOMEBREW_PREFIX}/share/python/hg
+      #{'C:\\Program Files (x86)\\Mercurial\\hg.exe'}
       ].find { |p| File.executable? p }
   end
 

@@ -16,7 +16,7 @@ class Tmux < Formula
   end
 
   def install
-    system "sh", "autogen.sh" if build.head?
+    system "./autogen.sh" if build.head?
 
     ENV.append "LDFLAGS", '-lresolv'
     system "./configure", "--disable-dependency-tracking",

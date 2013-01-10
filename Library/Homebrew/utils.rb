@@ -92,7 +92,21 @@ module Homebrew
     puts "#{cmd} #{args*' '}" if ARGV.verbose?
     
     args.collect!{|arg| arg.to_s}
-    Process.spawn cmd, *args
+
+    begin
+        Process.spawn cmd, *args
+    rescue => e
+        # Shut up, that's real clean code.
+        # But if you know how to write it better, let me know - A.
+        msg = "#{e}"
+        if msg.include? "Exec format error"
+            # Shell scripts need to be spawned with 'sh' explicitly on Windows.
+            Process.spawn 'sh', *[cmd, *args]
+        else
+            puts msg
+        end
+    end
+
     Process.wait
     $?.success?
   end

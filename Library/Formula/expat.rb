@@ -6,7 +6,7 @@ class Expat < Formula
   sha1 'b08197d146930a5543a7b99e871cba3da614f6f0'
 
   def install
-    system "sh", "configure", "--disable-debug", "--disable-dependency-tracking",
+    system "./configure", "--disable-debug", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--mandir=#{man}"
     system "make install"
