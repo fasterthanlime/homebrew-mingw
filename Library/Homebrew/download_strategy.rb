@@ -87,11 +87,11 @@ class CurlDownloadStrategy < AbstractDownloadStrategy
       # Assume these are also tarred
       # TODO check if it's really a tar archive
       # --force-local is needed for window paths with a ':' in them
-      safe_system 'tar', '--force-local', '-xf', @tarball_path
+      safe_system 'tar', '--force-local', '-xhf', @tarball_path
       chdir
     when :xz
       #raise "You must install XZutils: brew install xz" unless which "xz"
-      safe_system "xz -dc \"#{@tarball_path}\" | tar xf -"
+      safe_system "sh -c 'xz -dc \"#{@tarball_path}\" | tar xf -'"
       chdir
     when :rar
       raise "You must install unrar: brew install unrar" unless which "unrar"
